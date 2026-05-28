@@ -1,293 +1,511 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include "tdas/list.h"
 #include "tdas/heap.h"
 #include "tdas/extra.h"
-#include <string.h>
-#include <time.h>
+#include "tdas/stack.h"
+#include "tdas/queue.h"
 
-typedef struct {
-    int maze[N][N];
-    int x;
-    int y;
-    int steps;
-    List* actions;
+typedef struct {//se declara la estructura State que representa el estado del laberinto
+    int maze[N][N];// Matriz NxN que representa el laberinto
+    int x;// Fila actual del agente
+    int y;// Columna actual del agente
+    int x_final;// Fila de la meta
+    int y_final;// Columna de la meta
+    int steps;// Pasos dados hasta el estado actual
+    List* actions;// Lista de movimientos para llegar al estado
 } State;
 
-int distancia_L1(State* state) {
-    return abs(state->x - (N-1)) + abs(state->y - (N-1));
+int distancia_L1(State* state)//Heuristica de manhattan para determinar la distancia desde el estado actual hasta la meta
+{
+    return abs(state->x - state->x_final) + abs(state->y - state->y_final);
 }
 
-void imprimirEstado(const State *estado) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            if (estado->x == i && estado->y == j) printf(" A ");
-            else if (i == 0 && j == 0)             printf(" I ");
-            else if (i == N-1 && j == N-1)         printf(" M ");
-            else if (estado->maze[i][j] == 0)      printf(" . ");
-            else                                    printf("[X]");
+int is_final_state(State* state)//Funcion que verifica si la posicion actual es la posicion final 
+{
+    return state->x == state->x_final && state->y == state->y_final;
+}
+
+State* transition(State* current, int action)//Se genera un nuevo estado aplicando una acción
+{
+    int dx=0,dy=0;//Se inicializan las variables dx y dy en 0, estas representan el cambio en la posicion del agente
+    if(action==1)
+    {
+        dx=-1;//Arriba
+    }
+    else 
+    {
+        if(action==2)
+        {
+            dx=1;//Abajo
         }
-        printf("\n");
-    }
-}
-
-State crearEstadoInicial(int maze[N][N], int dificultad) {
-    State estado;
-    generate_maze(estado.maze, dificultad);
-    estado.x = 0;
-    estado.y = 0;
-    estado.steps = 0;
-    estado.actions = list_create();
-    return estado;
-}
-
-State* copiarEstado(State* estado) {
-    State* nuevo = (State*)malloc(sizeof(State));
-    memcpy(nuevo->maze, estado->maze, sizeof(estado->maze));
-    nuevo->x = estado->x;
-    nuevo->y = estado->y;
-    nuevo->steps = estado->steps;
-    nuevo->actions = list_create();
-    char* accion = list_first(estado->actions);
-    while (accion != NULL) {
-        list_pushBack(nuevo->actions, strdup(accion));
-        accion = list_next(estado->actions);
-    }
-    return nuevo;
-}
-
-void liberarEstado(State* estado) {
-    char* accion = list_first(estado->actions);
-    while (accion != NULL) {
-        free(accion);
-        accion = list_next(estado->actions);
-    }
-    list_clean(estado->actions);
-    free(estado->actions);
-    free(estado);
-}
-
-int esMeta(State* estado) {
-    return estado->x == N-1 && estado->y == N-1;
-}
-
-void imprimirSolucion(State* sol, int explorados) {
-    printf("\n=== Solución encontrada ===\n");
-    printf("Pasos realizados: %d\n", sol->steps);
-    printf("Nodos explorados: %d\n", explorados);
-    printf("Camino: ");
-    char* accion = list_first(sol->actions);
-    while (accion != NULL) {
-        printf("%s", accion);
-        accion = list_next(sol->actions);
-        if (accion != NULL) printf(" -> ");
-    }
-    printf("\n\nEstado final:\n");
-    imprimirEstado(sol);
-}
-
-void agregarVecinos(State* actual, List* vecinos, int visited[N][N]) {
-    int dx[] = {-1, 1, 0, 0};
-    int dy[] = {0, 0, -1, 1};
-    char* nombres[] = {"Arriba", "Abajo", "Izquierda", "Derecha"};
-
-    for (int i = 0; i < 4; i++) {
-        int nx = actual->x + dx[i];
-        int ny = actual->y + dy[i];
-        if (nx >= 0 && nx < N && ny >= 0 && ny < N
-            && actual->maze[nx][ny] == 0
-            && !visited[nx][ny]) {
-            State* nuevo = copiarEstado(actual);
-            nuevo->x = nx;
-            nuevo->y = ny;
-            nuevo->steps++;
-            list_pushBack(nuevo->actions, strdup(nombres[i]));
-            list_pushBack(vecinos, nuevo);
+        else 
+        {
+            if(action==3)
+            {
+                dy=-1;//Izquierda
+            }
+            else  
+            {
+                if(action==4)
+                {
+                    dy=1;//Derecha
+                }
+            }
         }
     }
+    int nx=current->x + dx;//Se calcula la nueva posicion en X del agente 
+    int ny=current->y + dy;//Se calcula la nueva posicion en Y del agente
+    if(nx<0 || nx>=N || ny<0 || ny>=N)//Se verifica si la posicion se haya en los límites del laberinto
+    {
+        return NULL;
+    }
+    if(current->maze[nx][ny]==1)//Se verifica que la posicion no sea un obstáculo
+    {
+        return NULL;
+    }
+    State* next=(State*)malloc(sizeof(State));//Se crea un nuevo estado
+    if(next==NULL)//Si no se pudo asignar memoria se retorna NULL
+    {
+        return NULL;
+    }
+    memcpy(next->maze,current->maze,sizeof(current->maze));//Se copia el laberinto al nuevo estado
+    next->x=nx;//Se actualiza la posicion del agente en X
+    next->y=ny;//Se actualiza la posicion del agente en Y
+    next->x_final=current->x_final;//Se copia la posicion final del laberinto en X
+    next->y_final=current->y_final;//Se copia la posicion final del laberinto en Y
+    next->steps=current->steps + 1;//Se incrementa el numero de pasos
+    next->actions=list_create();//Se crea una nueva lista de acciones
+    int* act;//Se crea un puntero para iterar sobre las acciones
+    void* ptr=list_first(current->actions);//Se obtiene el primer elemento de la lista de acciones del estado actual
+    while(ptr!=NULL)//Se itera sobre las acciones del estado actual mientras haya acciones
+    {
+        int* copy=(int*)malloc(sizeof(int));//Se reserva memoria para una copia de la accion
+        *copy= *(int*)ptr;//Se copia la accion actual
+        list_pushBack(next->actions,copy);//Se agrega la accion copiada a la lista de acciones del nuevo estado
+        ptr=list_next(current->actions);//Se pasa a la siguiente accion en la lista
+    }
+    int* new_action=(int*)malloc(sizeof(int));//Se reserva memoria para la nueva accion
+    *new_action=action;//Se asigna la accion actual a la nueva accion
+    list_pushBack(next->actions,new_action);//Se agrega la nueva accion a la lista de acciones del nuevo estado
+    return next;//Se retorna el nuevo estado
 }
 
-void dfs(State estado_inicial) {
-    int visited[N][N] = {0};
-    int explorados = 0;
+void free_state(State* state)//Funcion para liberar la memoria de un estado
+{
+    if(state==NULL)//Si el estado es NULL se retorna
+    {
+        return;
+    }
+    int* act=(int*)list_first(state->actions);//Se obtiene el primer elemento de la lista de acciones del estado
+    while(act!=NULL)//Mientras haya acciones en la lista se continua el bucle
+    {
+        free(act);//Se libera la memoria de la accion actual
+        act=(int*)list_next(state->actions);//Se pasa a la siguiente accion en la lista
+    }
+    list_clean(state->actions);//Se limpia la lista de acciones
+    free(state->actions);//Se libera la memoria de la lista de acciones
+    free(state);//Se libera la memoria del estado
+}
 
-    List* pila = list_create();
-    State* inicio = copiarEstado(&estado_inicial);
-    list_pushFront(pila, inicio);
+void imprimirEstado(const State* estado)//Funcion para imprimir el estado del laberinto
+{
+    printf("\n");//Salto de línea para mqyor orden
+    for(int i=0;i<N;i++)//Se itera sobre las filas del laberinto
+    {
+        for(int j=0;j<N;j++)//Se itera sobre las columnas del laberinto
+        {
+            if(estado->x==i && estado->y==j)//Se verifica si la posicion actual es la posicion del agente
+            {
+                printf(" A ");//Posición actual del agente
+            }
+            else
+            {
+                if(i==0 && j==0)//Se verifica si la posicion actual es la posicion inicial del laberinto
+                {
+                    printf(" I ");//Inicio del laberinto
+                }
+                else
+                {
+                    if(i==estado->x_final && j==estado->y_final)//Se verifica si la posicion actual es la posicion final del laberinto
+                    {
+                        printf(" M ");//Meta del laberinto
+                    }
+                    else
+                    {
+                        if(estado->maze[i][j]==1)//Se verifica si la posicion actual es un obstáculo
+                        {
+                            printf("[X]");//Obstáculo
+                        }
+                        else//Si no es ninguna de las anteriores, es una celda libre
+                        {
+                            printf(" . ");//Celda libre
+                        }
+                    }
+                }
+            }
+            
+        }
+        printf("\n");//Salto de línea para pasar a la siguiente fila
+    }
+}
 
-    while (list_first(pila) != NULL) {
-        State* actual = (State*)list_popFront(pila);
-        explorados++;
+void imprimirRuta(State* estado_inicial, State* estado_final)//Se imprime el laberinto con la ruta final dibujada con '+'
+{
+    int ruta[N][N];//Se crea una matriz para almacenar la ruta
+    memset(ruta,0,sizeof(ruta));//Se inicializa la matriz en 0
+    int cx=0,cy=0;//Se inicializan las variables cx y cy en 0, estas representan la posicion actual en la ruta
+    ruta[cx][cy]=1;//Se marca la posicion inicial en la ruta
+    void* ptr=list_first(estado_final->actions);//Se obtiene el primer elemento de la lista de acciones del estado final
+    while(ptr!=NULL)//Se itera sobre las acciones del estado final mientras haya acciones
+    {
+        int action= *(int*)ptr;//Se obtiene la accion actual
+        if(action==1)
+        {
+            cx--;//Se mueve hacia arriba
+        }
+        else 
+        {
+            if(action==2)
+            {
+                cx++;//Se mueve hacia abajo
+            }
+            else
+            {
+                if(action==3)
+                {
+                    cy--;//Se mueve hacia la izquierda
+                }
+                else
+                {
+                    if(action==4)
+                    {
+                        cy++;//Se mueve hacia la derecha
+                    }
+                }
+            }
+        }
+        ruta[cx][cy]=1;//Se marca la posicion actual en la ruta
+        ptr=list_next(estado_final->actions);//Se pasa a la siguiente accion en la lista
+    }
+    printf("\n");//Salto de línea para mayor orden
+    for(int i=0;i<N;i++)//Se itera sobre las filas del laberinto
+    {
+        for(int j=0;j<N;j++)//Se itera sobre las columnas del laberinto
+        {
+            if(i==0 && j==0)//Se verifica si la posicion actual es la posicion inicial del laberinto
+            {
+                printf(" I ");
+            }
+            else
+            {
+                if(i==estado_final->x_final && j==estado_final->y_final)//Se verifica si la posicion actual es la posicion final del laberinto
+                {
+                    printf(" M ");
+                }
+                else
+                {
+                    if(estado_inicial->maze[i][j]==1)//Se verifica si la posicion actual es un obstáculo
+                    {
+                        printf("[X]");
+                    }
+                    else 
+                    {
+                        if(ruta[i][j])//Se verifica si la posicion actual es parte de la ruta
+                        {
+                            printf(" + ");// Marca la ruta encontrada
+                        } 
+                        else//Si no es ninguna de las anteriores, es una celda libre
+                        {
+                            printf(" . ");
+                        }
+                    }
+                }
+            }
+        }
+        printf("\n");//Salto de línea para pasar a la siguiente fila
+    }
+}
 
-        if (visited[actual->x][actual->y]) {
-            liberarEstado(actual);
+State crearEstadoInicial(int dificultad)//Funcion que crea el estado inicial del laberinto
+{
+    State estado;//Se crea una variable de tipo State para almacenar el estado inicial
+    generate_maze(estado.maze,dificultad);//Se genera el laberinto con la dificultad ingresada
+    estado.x=0;//Se inicializa la posicion del agente en la posicion inicial X del laberinto
+    estado.y=0;//Se inicializa la posicion del agente en la posicion inicial Y del laberinto
+    estado.x_final=N-1;//Se inicializa la posicion final del laberinto en X
+    estado.y_final=N-1;//Se inicializa la posicion final del laberinto en Y
+    estado.steps=0;//Se inicializa el numero de pasos en 0
+    estado.actions=list_create();//Se crea una lista vacia para almacenar las acciones
+    return estado;//Se retorna el estado inicial
+}
+
+void dfs(State estado_inicial)//Funcion para realizar la busqueda en profundidad
+{
+    printf("\n==============================\n");
+    printf("Búsqueda en Profundidad (DFS)\n");
+    printf("==============================\n");
+    printf("¡Aviso: DFS puede no encontrar la solución mas corta!\n\n");
+    int visited[N][N];//Se crea una matriz para almacenar los nodos visitados
+    memset(visited,0,sizeof(visited));//Se inicializa la matriz en 0
+    Stack* pila=stack_create(NULL);//Se crea una pila para almacenar los nodos a visitar
+    State* init=(State*)malloc(sizeof(State));//Se reserva memoria para el estado inicial
+    *init=estado_inicial;//Se copia el estado inicial al nuevo estado
+    init->actions=list_create();//Se crea una lista vacia para almacenar las acciones
+    stack_push(pila,init);//Se agrega el estado inicial a la pila
+    int iteraciones=0;//Se inicializa el contador de iteraciones en 0
+    State* solucion=NULL;//Se inicializa el puntero a la solucion en NULL
+    while(stack_top(pila)!=NULL)//Mientras haya nodos en la pila se continua el bucle
+    {
+        State* actual=(State*)stack_pop(pila);//Se obtiene el nodo actual de la pila
+        iteraciones++;//Se incrementa el contador de iteraciones
+        if(visited[actual->x][actual->y])//Si el nodo actual ya fue visitado se libera la memoria y se continua
+        {
+            free_state(actual);//Se libera la memoria del nodo actual
+            continue;//Se continua con el siguiente nodo en la pila
+        }
+        visited[actual->x][actual->y]=1;//Se marca el nodo actual como visitado
+        if(is_final_state(actual))//Si el nodo actual es el estado final se guarda la solucion y se sale del bucle
+        {
+            solucion=actual;//Se guarda la solucion
+            break;
+        }
+        for(int accion=1;accion<=4;accion++)//Se itera sobre las acciones posibles
+        {
+            State* vecino=transition(actual,accion);//Se genera el estado vecino aplicando la accion actual
+            if(vecino!=NULL && !visited[vecino->x][vecino->y])//Si el estado vecino no es NULL y no ha sido visitado se agrega a la pila
+            {
+                stack_push(pila,vecino);//Se agrega el estado vecino a la pila
+            }
+            else
+            {
+                if(vecino!=NULL)//Si el estado vecino no es NULL se libera la memoria
+                {
+                    free_state(vecino);
+                }
+            }
+        }
+        free_state(actual);//Se libera la memoria del nodo actual
+    }
+    State* s;//Se crea un puntero para iterar sobre los nodos restantes en la pila
+    while((s=(State*)stack_pop(pila))!=NULL)//Mientras haya nodos en la pila se libera la memoria
+    {
+        free_state(s);
+    }
+    free(pila);//Se libera la memoria de la pila
+    if(solucion!=NULL)//Si se encontro una solucion se imprime la informacion de la solucion
+    {
+        printf("¡Solución encontrada!\n");
+        printf("Costo del camino (pasos): %d\n",solucion->steps);
+        printf("Cantidad de iteraciones (nodos expandidos): %d\n",iteraciones);
+        imprimirRuta(&estado_inicial,solucion);
+        free_state(solucion);//Se libera la memoria de la solucion
+    } 
+    else//Si no se encontro una solucion se imprime un mensaje de error
+    {
+        printf("No se encontró solución con DFS.\n");
+        printf("Iteraciones realizadas: %d\n",iteraciones);
+    }
+}
+
+void bfs(State estado_inicial)//Funcion para realizar la busqueda en anchura
+{
+    printf("\n==============================\n");
+    printf("   Búsqueda en Anchura (BFS)\n");
+    printf("==============================\n");
+    printf("¡Este metodo garantiza la solucion mas corta!\n\n");
+    int visited[N][N];
+    memset(visited,0,sizeof(visited));
+    Queue* cola=queue_create(NULL);//Se crea una cola para almacenar los nodos a visitar
+    State* init=(State*)malloc(sizeof(State));//Se reserva memoria para el estado inicial
+    *init=estado_inicial;//Se copia el estado inicial al nuevo estado
+    init->actions=list_create();//Se crea una lista vacia para almacenar las acciones
+    queue_insert(cola,init);//Se agrega el estado inicial a la cola
+    visited[init->x][init->y]=1;//Se marca el estado inicial como visitado
+    int iteraciones=0;//Se inicializa el contador de iteraciones en 0
+    State* solucion=NULL;//Se inicializa el puntero a la solucion en NULL
+    while(queue_front(cola)!=NULL)//Mientras haya nodos en la cola se continua el bucle
+    {
+        State* actual=(State*)queue_remove(cola);//Se obtiene el nodo actual de la cola
+        iteraciones++;//Se incrementa el contador de iteraciones
+        if(is_final_state(actual))//Si el nodo actual es el estado final se guarda la solucion y se sale del bucle
+        {
+            solucion=actual;
+            break;
+        }
+        for(int accion=1;accion<=4;accion++)//Se itera sobre las acciones posibles
+        {
+            State* vecino=transition(actual,accion);//Se genera el estado vecino aplicando la accion actual
+            if(vecino!=NULL && !visited[vecino->x][vecino->y])//Si el estado vecino no es NULL y no ha sido visitado se agrega a la cola
+            {
+                visited[vecino->x][vecino->y]=1;//Se marca el estado vecino como visitado
+                queue_insert(cola,vecino);//Se agrega el estado vecino a la cola
+            }
+            else
+            {
+                if(vecino!=NULL)//Si el estado vecino no es NULL se libera la memoria
+                {
+                    free_state(vecino);//Se libera la memoria del estado vecino
+                }
+            }
+        }
+        free_state(actual);//Se libera la memoria del nodo actual
+    }
+    State* s;//Se crea un puntero para iterar sobre los nodos restantes en la cola
+    while((s=(State*)queue_remove(cola))!=NULL)//
+    {
+        free_state(s);
+    }
+    free(cola);//Se libera la memoria de la cola
+    if(solucion!=NULL)//Si se encontro una solucion se imprime la informacion de la solucion
+    {
+        printf("¡Solución encontrada!\n");
+        printf("Costo del camino (pasos): %d\n",solucion->steps);
+        printf("Cantidad de iteraciones (nodos expandidos): %d\n",iteraciones);
+        imprimirRuta(&estado_inicial,solucion);
+        free_state(solucion);//Se libera la memoria de la solucion
+    }
+    else//Si no se encontro una solucion se imprime un mensaje de error
+    {
+        printf("No se encontró solución con BFS.\n");
+        printf("Iteraciones realizadas: %d\n",iteraciones);
+    }
+}
+
+void Astar(State estado_inicial)//Funcion para realizar la busqueda A*
+{
+    printf("\n==============================\n");
+    printf("   Búsqueda A* (Best-First)\n");
+    printf("==============================\n");
+    printf("¡Este metodo garantiza la solucion mas corta de manera mas eficiente!\n\n");
+    int visited[N][N];
+    memset(visited,0,sizeof(visited));
+    Heap* heap=heap_create();//Se crea un montículo para almacenar los nodos a visitar
+    State* init=(State*)malloc(sizeof(State));//Se reserva memoria para el estado inicial
+    *init=estado_inicial;//Se copia el estado inicial al nuevo estado
+    init->actions=list_create();//Se crea una lista vacia para almacenar las acciones
+    int f=init->steps + distancia_L1(init);//Se calcula la funcion de evaluacion f(n) = g(n) + h(n)
+    heap_push(heap,init,-f);//Se agrega el estado inicial al montículo con la funcion de evaluacion f(n)
+    int iteraciones=0;//Se inicializa el contador de iteraciones en 0
+    State* solucion=NULL;//Se inicializa el puntero a la solucion en NULL
+    while(heap_top(heap)!=NULL)//Mientras haya nodos en el montículo se continua el bucle
+    {
+        State* actual=(State*)heap_top(heap);//Se obtiene el nodo actual del montículo
+        heap_pop(heap);//Se elimina el nodo actual del montículo
+        iteraciones++;//Se incrementa el contador de iteraciones
+        if(visited[actual->x][actual->y])//Si el nodo actual ya fue visitado se libera la memoria y se continua
+        {
+            free_state(actual);
             continue;
         }
-        visited[actual->x][actual->y] = 1;
-
-        if (esMeta(actual)) {
-            imprimirSolucion(actual, explorados);
-            liberarEstado(actual);
-            list_clean(pila);
-            free(pila);
-            return;
+        visited[actual->x][actual->y]=1;//Se marca el nodo actual como visitado
+        if(is_final_state(actual))//Si el nodo actual es el estado final se guarda la solucion y se sale del bucle
+        {
+            solucion=actual;
+            break;
         }
-
-        List* vecinos = list_create();
-        agregarVecinos(actual, vecinos, visited);
-
-        State* vecino = (State*)list_first(vecinos);
-        while (vecino != NULL) {
-            list_pushFront(pila, vecino);
-            vecino = (State*)list_next(vecinos);
+        for(int accion=1;accion<=4;accion++)//Se itera sobre las acciones posibles
+        {
+            State* vecino=transition(actual,accion);//Se genera el estado vecino aplicando la accion actual
+            if(vecino!=NULL && !visited[vecino->x][vecino->y])//Si el estado vecino no es NULL y no ha sido visitado se agrega al montículo
+            {
+                int f_vecino=vecino->steps + distancia_L1(vecino);//Se calcula la funcion de evaluacion f(n) = g(n) + h(n) para el estado vecino
+                heap_push(heap,vecino,-f_vecino);//Se agrega el estado vecino al montículo con la funcion de evaluacion f(n)
+            }
+            else
+            {
+                if(vecino!=NULL)//Si el estado vecino no es NULL se libera la memoria
+                {
+                    free_state(vecino);
+                }
+            }
         }
-        list_clean(vecinos);
-        free(vecinos);
-        liberarEstado(actual);
+        free_state(actual);//Se libera la memoria del nodo actual
     }
-
-    printf("\nNo se encontró solución (DFS).\n");
-    list_clean(pila);
-    free(pila);
-}
-
-void bfs(State estado_inicial) {
-    int visited[N][N] = {0};
-    int explorados = 0;
-
-    List* cola = list_create();
-    State* inicio = copiarEstado(&estado_inicial);
-    list_pushBack(cola, inicio);
-    visited[inicio->x][inicio->y] = 1;
-
-    while (list_first(cola) != NULL) {
-        State* actual = (State*)list_popFront(cola);
-        explorados++;
-
-        if (esMeta(actual)) {
-            imprimirSolucion(actual, explorados);
-            liberarEstado(actual);
-            list_clean(cola);
-            free(cola);
-            return;
-        }
-
-        List* vecinos = list_create();
-        agregarVecinos(actual, vecinos, visited);
-
-        State* vecino = (State*)list_first(vecinos);
-        while (vecino != NULL) {
-            visited[vecino->x][vecino->y] = 1;
-            list_pushBack(cola, vecino);
-            vecino = (State*)list_next(vecinos);
-        }
-        list_clean(vecinos);
-        free(vecinos);
-        liberarEstado(actual);
-    }
-
-    printf("\nNo se encontró solución (BFS).\n");
-    list_clean(cola);
-    free(cola);
-}
-
-void best_first(State estado_inicial) {
-    int visited[N][N] = {0};
-    int explorados = 0;
-
-    Heap* heap = heap_create();
-    State* inicio = copiarEstado(&estado_inicial);
-    heap_push(heap, inicio, -distancia_L1(inicio));
-
-    while (heap_top(heap) != NULL) {
-        State* actual = (State*)heap_top(heap);
+    while(heap_top(heap)!=NULL)//Mientras haya nodos en el montículo se libera la memoria
+    {
+        State* s=(State*)heap_top(heap);
         heap_pop(heap);
-        explorados++;
-
-        if (visited[actual->x][actual->y]) {
-            liberarEstado(actual);
-            continue;
-        }
-        visited[actual->x][actual->y] = 1;
-
-        if (esMeta(actual)) {
-            imprimirSolucion(actual, explorados);
-            liberarEstado(actual);
-            free(heap);
-            return;
-        }
-
-        List* vecinos = list_create();
-        agregarVecinos(actual, vecinos, visited);
-
-        State* vecino = (State*)list_first(vecinos);
-        while (vecino != NULL) {
-            heap_push(heap, vecino, -distancia_L1(vecino));
-            vecino = (State*)list_next(vecinos);
-        }
-        list_clean(vecinos);
-        free(vecinos);
-        liberarEstado(actual);
+        free_state(s);
     }
-
-    printf("\nNo se encontró solución (Best First).\n");
-    free(heap);
+    free(heap);//Se libera la memoria del montículo
+    if(solucion!=NULL)//Si se encontro una solucion se imprime la informacion de la solucion
+    {
+        printf("¡Solución encontrada!\n");
+        printf("Costo del camino (pasos): %d\n",solucion->steps);
+        printf("Cantidad de iteraciones (nodos expandidos): %d\n",iteraciones);
+        imprimirRuta(&estado_inicial,solucion);
+        free_state(solucion);
+    }
+    else//Si no se encontro una solucion se imprime un mensaje de error
+    {
+        printf("No se encontró solución con A*.\n");
+        printf("Iteraciones realizadas: %d\n",iteraciones);
+    }
 }
 
-int main() {
-    srand(time(NULL));
-    int maze[N][N];
-    int dificultad;
-    do {
-        printf("Ingrese la dificultad del laberinto (porcentaje de obstáculos, 0 a 100): ");
-        scanf("%d", &dificultad);
-        if (dificultad < 0 || dificultad > 100) {
-            printf("Error: Por favor ingrese un valor válido entre 0 y 100.\n");
+int main() 
+{//funcion principal
+    srand(time(NULL));//se inicializa la semilla para generar numeros aleatorios(generar el laberinto)
+    int dificultad;//variable para almacenar la dificultad del laberinto
+    do {// Se solicita ingrsar la dificultad del laberinto
+        printf("Ingrese la dificultad del laberinto(porcentaje de obstáculos, 0 a 100): ");
+        scanf("%d", &dificultad);//se escanea el valor ingresado
+        if(dificultad<0 || dificultad>100) //se verifica que el valor ingresado sea valido
+        {
+            printf("Ingrese un valor valido entre 0 y 100!\n");//si es invalido se imprime un mensaje
         }
-    } while (dificultad < 0 || dificultad > 100);
-
-    State estado_inicial = crearEstadoInicial(maze, dificultad);
-    printf("\nEstado inicial del puzzle:\n");
-    imprimirEstado(&estado_inicial);
-    printf("Distancia L1: %d\n", distancia_L1(&estado_inicial));
-
-    char opcion;
-    do {
-        puts("========================================");
+    } while(dificultad<0 || dificultad>100);//el bucle se repite hasta que se ingrese un valor valido
+    State estado_inicial=crearEstadoInicial(dificultad);//Se crea el estado inicial del laberinto en base a la dificultad ingresada
+    printf("\nEstado inicial del laberinto(I=inicio, M=meta, [X]=obstáculo, .=espacio libre):\n"); //Se imprime el estado inicial del laberinto, indicando el significado de cada simbolo
+    imprimirEstado(&estado_inicial);//se llama a la funcion imprimirEstado para mostrar el laberinto
+    printf("Distancia L1 al inicio: %d\n",distancia_L1(&estado_inicial));//se imprime la distancia desde el inicio hasta la meta
+    char opcion;//variable para almacenar la opcion del usuario
+    do {//se imprime el menu de opciones
+        puts("\n========================================");
         puts("     Escoge método de búsqueda");
         puts("========================================");
         puts("1) Búsqueda en Profundidad (DFS)");
         puts("2) Búsqueda en Anchura (BFS)");
-        puts("3) Búsqueda Mejor Primero");
+        puts("3) Búsqueda A* (Mejor Primero)");
         puts("4) Salir");
         printf("Ingrese su opción: ");
-        scanf(" %c", &opcion);
-        switch (opcion) {
-        case '1':
-            dfs(estado_inicial);
-            break;
-        case '2':
-            bfs(estado_inicial);
-            break;
-        case '3':
-            best_first(estado_inicial);
-            break;
-        case '4':
-            break;
-        default:
-            printf("Opción no válida. Por favor, ingrese una opción válida.\n");
-            break;
+        scanf(" %c", &opcion);//se escanea la opcion ingresada por el usuario
+        switch(opcion) 
+        {
+            case '1'://si la opcion es 1 se llama a la funcion dfs
+                dfs(estado_inicial);
+                break;
+            case '2'://si la opcion es 2 se llama a la funcion bfs
+                bfs(estado_inicial);
+                break;
+            case '3'://si la opcion es 3 se llama a la funcion Astar
+                Astar(estado_inicial);
+                break;
+            case '4'://si la opcion es 4 se sale del programa
+                printf("Saliendo...\n");
+                break;
+            default://si se ingresa una opcion invalida se imprime un mensaje de error
+                printf("Ingrese una opcion valida!\n");
         }
-        if (opcion != '4') {
-            presioneTeclaParaContinuar();
-            limpiarPantalla();
-            printf("\nEstado inicial del puzzle:\n");
+        if(opcion!='4')//si la opcion escogida no es salir, se muestra el laberinto actual
+        {
+            presioneTeclaParaContinuar();//funcion para pausar la ejecucion y permitir al usuario ver los resultados, continuando cuando se presione una tecla
+            limpiarPantalla();//funcion para limpiar la pantalla
+            printf("Laberinto actual(I=inicio, M=meta, [X]=obstáculo, .=espacio libre):\n");
             imprimirEstado(&estado_inicial);
-            printf("Distancia L1: %d\n", distancia_L1(&estado_inicial));
         }
-    } while (opcion != '4');
-
-    list_clean(estado_inicial.actions);
-    free(estado_inicial.actions);
-    return 0;
+    } while(opcion!='4');//si la opcion es 4 se sale del bucle
+    int* act=(int*)list_first(estado_inicial.actions);//Se libera la lista de acciones del estado inicial, comenzando por el primer elemento
+    while(act!=NULL)//mientras haya acciones en la lista se continua el bucle
+    {
+        free(act);//se libera la memoria de la accion actual
+        act=(int*)list_next(estado_inicial.actions);//se pasa a la siguiente accion en la lista
+    }
+    list_clean(estado_inicial.actions);//se limpia la lista de acciones
+    free(estado_inicial.actions);//se libera la memoria de la lista de acciones
+    return 0;//se retorna 0 para indicar que el programa se ejecuto correctamente
 }
+
