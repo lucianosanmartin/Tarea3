@@ -2,7 +2,7 @@
 
 ## Descripción 
 
-Este repositorio contiene un programa de Navegación en un Laberinto NxN(con una dificultad ajustable de 0 a 100), en este, un agente recorrera el laberinto buscando una salida y sorteando obstáculos, el agente buscará la ruta más corta para llegar a la meta, este programa cuenta con 3 métodos de búsqueda, búsqueda por anchura(BFS), búsqueda por altura(DFS) y A star(A*), los tres métodos intentaran hayar la ruta más corta.
+Este repositorio contiene un programa de Navegación en un Laberinto NxN(con una dificultad ajustable de 0 a 100), en este, un agente recorrera el laberinto buscando una salida y sorteando obstáculos, el agente buscará la ruta más corta para llegar a la meta, este programa cuenta con 3 métodos de búsqueda, búsqueda por anchura(BFS), búsqueda en profundidad(DFS) y A star(A*), los tres métodos intentaran hayar la ruta más corta.
 
 ## Cómo compilar y ejecutar el programa
 
@@ -12,7 +12,7 @@ Una vez importado el repositorio, debe presionar "Open library"(esta se haya al 
 
 ## Funcionalidades
 
--La opción de búsqueda por anchura puede que no devuelva la ruta más corta el 100% de las veces
+-La opción de búsqueda en profundidad puede que no devuelva la ruta más corta el 100% de las veces
 
 ## Ejemplo de uso
 
