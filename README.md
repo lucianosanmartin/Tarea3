@@ -14,11 +14,11 @@ Una vez importado el repositorio, debe presionar "Open library"(esta se haya al 
 
 -La opción de búsqueda en profundidad puede que no devuelva la ruta más corta el 100% de las veces
 
+(le chamuyaría porque no funciona el 100% de las veces pero la verdad no tengo ni idea de por qué pasa XD)
+
 ## Ejemplo de uso
 
 Al inicio se le mostrará un mensaje pidiendole que ingrese la dificultad, al ingresar un valor válido se generará un laberinto
-
-(le chamuyaría porque no funciona el 100% de las veces pero la verdad no tengo ni idea de por qué pasa XD)
 
 ### Seleccionar dificultad
 
