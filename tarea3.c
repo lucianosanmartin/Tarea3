@@ -377,7 +377,7 @@ void bfs(State estado_inicial)//Funcion para realizar la busqueda en anchura
 void Astar(State estado_inicial)//Funcion para realizar la busqueda A*
 {
     printf("\n==============================\n");
-    printf("   Búsqueda A* (Best-First)\n");
+    printf("   Búsqueda A* (Mejor Primero)\n");
     printf("==============================\n");
     printf("¡Este metodo garantiza la solucion mas corta de manera mas eficiente!\n\n");
     int visited[N][N];
