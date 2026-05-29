@@ -450,14 +450,47 @@ int main()
 {//funcion principal
     srand(time(NULL));//se inicializa la semilla para generar numeros aleatorios(generar el laberinto)
     int dificultad;//variable para almacenar la dificultad del laberinto
-    do {// Se solicita ingrsar la dificultad del laberinto
-        printf("Ingrese la dificultad del laberinto(porcentaje de obstáculos, 0 a 100): ");
-        scanf("%d", &dificultad);//se escanea el valor ingresado
-        if(dificultad<0 || dificultad>100) //se verifica que el valor ingresado sea valido
+    char buf[64];//Variable para almacenar la entrada del usuario
+    while(1)//Bucle para ingresar la dificultad del laberinto
+    {
+        limpiarPantalla();
+        printf("Ingrese la dificultad del laberinto (porcentaje de obstáculos, 0 a 100): ");
+        if(fgets(buf,sizeof(buf),stdin)==NULL)//Si la entrada es nula se pasa a la siguiente iteracion del bucle
         {
-            printf("Ingrese un valor valido entre 0 y 100!\n");//si es invalido se imprime un mensaje
+            continue;
         }
-    } while(dificultad<0 || dificultad>100);//el bucle se repite hasta que se ingrese un valor valido
+        char* ptr=buf;//Se crea un puntero para iterar sobre la entrada del usuario
+        while(*ptr==' ' || *ptr=='\t')//Se salta los espacios en blanco
+        {
+            ptr++;
+        }
+        if(*ptr=='\0' || *ptr=='\n')//Si la entrada es vacia se imprime un mensaje de error y se pasa a la siguiente iteracion del bucle
+        {
+            printf("Entrada inválida. Ingrese un número entre 0 y 100!\n");
+            presioneTeclaParaContinuar();
+            continue;
+        }
+        char* endptr;//Se crea un puntero para almacenar el final de la entrada del usuario
+        long val=strtol(ptr,&endptr,10);//Se convierte la entrada del usuario a un numero entero
+        while(*endptr==' ' || *endptr=='\t')//Se salta los espacios en blanco
+        {
+            endptr++;
+        }
+        if(*endptr!='\n' && *endptr!='\0')//Si la entrada no es un numero se imprime un mensaje de error y se pasa a la siguiente iteracion del bucle
+        {
+            printf("Entrada inválida. Ingrese un número entre 0 y 100!\n");
+            presioneTeclaParaContinuar();
+            continue;
+        }
+        if(val<0 || val>100)//Si la entrada no esta en el rango de 0 a 100 se imprime un mensaje de error y se pasa a la siguiente iteracion del bucle
+        {
+            printf("Ingrese un valor entre 0 y 100!\n");
+            presioneTeclaParaContinuar();
+            continue;
+        }
+        dificultad=(int)val;//Se convierte la entrada del usuario a un numero entero y se guarda en la variable dificultad
+        break;//Se sale del bucle
+    }
     State estado_inicial=crearEstadoInicial(dificultad);//Se crea el estado inicial del laberinto en base a la dificultad ingresada
     printf("\nEstado inicial del laberinto(I=inicio, M=meta, [X]=obstáculo, .=espacio libre):\n"); //Se imprime el estado inicial del laberinto, indicando el significado de cada simbolo
     imprimirEstado(&estado_inicial);//se llama a la funcion imprimirEstado para mostrar el laberinto
