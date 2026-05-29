@@ -24,13 +24,13 @@ Ingrese la dificultad del laberinto (porcentaje de obstáculos, 0 a 100): 90
 
 Estado inicial del laberinto(I=inicio, M=meta, [X]=obstáculo, .=espacio libre):
 
-* se imprime el estado inicial del laberinto *
+*se imprime el estado inicial del laberinto *
 
 Distancia L1 al inicio: 15(ejemplo)
 
 ========================================
 
-     Escoge método de búsqueda
+Escoge método de búsqueda
 
 ========================================
 
@@ -60,7 +60,7 @@ Costo del camino (pasos): 17(ejemplo)
 
 Cantidad de iteraciones (nodos expandidos): 23(ejemplo)
 
-* se imprime la ruta *
+*se imprime la ruta *
 
 ### Búsqueda en Anchura (BFS)
 
@@ -80,7 +80,7 @@ Costo del camino (pasos): 24(ejemplo)
 
 Cantidad de iteraciones (nodos expandidos): 30(ejemplo)
 
-* se imprime la ruta *
+*se imprime la ruta *
 
 ### Búsqueda A* (Mejor Primero)
 
@@ -100,4 +100,4 @@ Costo del camino (pasos): 17(ejemplo)
 
 Cantidad de iteraciones (nodos expandidos): 23(ejemplo)
 
-* se imprime la ruta *
+*se imprime la ruta *
