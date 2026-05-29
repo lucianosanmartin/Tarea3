@@ -16,6 +16,88 @@ Una vez importado el repositorio, debe presionar "Open library"(esta se haya al 
 
 ## Ejemplo de uso
 
+Al inicio se le mostrará un mensaje pidiendole que ingrese la dificultad, al ingresar un valor válido se generará un laberinto
+
 ### Seleccionar dificultad
 
+Ingrese la dificultad del laberinto (porcentaje de obstáculos, 0 a 100): 90
 
+Estado inicial del laberinto(I=inicio, M=meta, [X]=obstáculo, .=espacio libre):
+
+* se imprime el estado inicial del laberinto *
+
+Distancia L1 al inicio: 15(ejemplo)
+
+========================================
+
+     Escoge método de búsqueda
+
+========================================
+
+1) Búsqueda en Profundidad (DFS)
+
+2) Búsqueda en Anchura (BFS)
+
+3) Búsqueda A* (Mejor Primero)
+
+4) Salir
+
+### Búsqueda en Profundidad (DFS)
+
+Ingrese su opción: 1
+
+==============================
+
+Búsqueda en Profundidad (DFS)
+
+==============================
+
+¡Aviso: DFS puede no encontrar la solución mas corta!
+
+¡Solución encontrada!
+
+Costo del camino (pasos): 17(ejemplo)
+
+Cantidad de iteraciones (nodos expandidos): 23(ejemplo)
+
+* se imprime la ruta *
+
+### Búsqueda en Anchura (BFS)
+
+Ingrese su opción: 2
+
+==============================
+
+   Búsqueda en Anchura (BFS)
+
+==============================
+
+¡Este metodo garantiza la solucion mas corta!
+
+¡Solución encontrada!
+
+Costo del camino (pasos): 24(ejemplo)
+
+Cantidad de iteraciones (nodos expandidos): 30(ejemplo)
+
+* se imprime la ruta *
+
+### Búsqueda A* (Mejor Primero)
+
+Ingrese su opción: 3
+
+==============================
+
+  Búsqueda A* (Mejor Primero)
+
+==============================
+
+¡Este metodo garantiza la solucion mas corta de manera mas eficiente!
+
+¡Solución encontrada!
+
+Costo del camino (pasos): 17(ejemplo)
+
+Cantidad de iteraciones (nodos expandidos): 23(ejemplo)
+
+* se imprime la ruta *
