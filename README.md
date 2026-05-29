@@ -8,7 +8,7 @@ Este repositorio contiene un programa de Navegación en un Laberinto NxN(con una
 
 Para ejecutar el programa, primero debes importar el repositorio a Replit, para esto, debes iniciar sesión en Replit, después apretar la opción "Import code or design", seguido apretar la opción de Github y  en esta copiar la URL del repositorio: https://github.com/lucianosanmartin/Tarea3
  
-Una vez importado el repositorio, debe presionar "Open library"(esta se haya al lado de la opción "Publish" e "Invite"), presionar la opción "File Tree" y abrir el archivo tarea3.c. Ahora debemos compilar, para esto debe elegir la opción "Tools & files"(que debe hayarse justo al lado de la ventana de la tarea3.c), en el buscador debe escribir "console" y  seleccionar la opción del mismo nombre, una vez dentro de console, debe seleccionar la opción de correr el programa.
+Una vez importado el repositorio, debe presionar "Open library"(esta se haya al lado de la opción "Publish" e "Invite"), presionar la opción "File Tree" y abrir el archivo "tarea3.c". Ahora debemos compilar, para esto debe elegir la opción "Tools & files"(que debe hayarse justo al lado de la ventana de la tarea3.c), en el buscador debe escribir "console" y  seleccionar la opción del mismo nombre, una vez dentro de console, debe seleccionar la opción de correr el programa.
 
 ## Funcionalidades
 
