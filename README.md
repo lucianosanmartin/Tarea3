@@ -6,9 +6,8 @@ Este repositorio contiene un programa de Navegación en un Laberinto NxN(con una
 
 ## Cómo compilar y ejecutar el programa
 
-Para ejecutar el programa, primero debes importar el repositorio a Replit 
+Para ejecutar el programa, primero debes importar el repositorio a Replit, para esto, debes iniciar sesión en Replit, después apretar la opción "Import code or design", seguido apretar la opción de Github y  en esta copiar la URL del repositorio: 
  
-
 Luego, abrir el archivo tarea3.c, debemos compilar (en la carpeta raíz)
 ````
 gcc tdas/*.c tarea3.c -Wno-unused-result -o tarea3
